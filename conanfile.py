@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
 import shutil
 import glob
@@ -10,7 +10,8 @@ import glob
 class ImageMagicConan(ConanFile):
     name = "imagemagick"
     version = "7.0.8-10"
-    description = "ImageMagick is a free and open-source software suite for displaying, converting, and editing raster image and vector image files"
+    description = "ImageMagick is a free and open-source software suite for displaying, converting, and editing " \
+                  "raster image and vector image files"
     url = "https://github.com/bincrafters/conan-imagemagic"
     homepage = "https://imagemagick.org"
     author = "Bincrafters <bincrafters@gmail.com>"
@@ -46,8 +47,16 @@ class ImageMagicConan(ConanFile):
                        "tiff": True,
                        "webp": True}
 
-    _source_subfolder = "source_subfolder"
+    _source_subfolder = "ImageMagick"
     _build_subfolder = "build_subfolder"
+
+    @property
+    def _is_mingw_windows(self):
+        return self.settings.os == 'Windows' and self.settings.compiler == 'gcc' and os.name == 'nt'
+
+    @property
+    def _is_msvc(self):
+        return self.settings.compiler == 'Visual Studio'
 
     def config_options(self):
         if self.settings.os == 'Windows':
@@ -81,6 +90,10 @@ class ImageMagicConan(ConanFile):
         extracted_dir = "ImageMagick-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
+        if self._is_msvc:
+            tools.get('https://github.com/ImageMagick/VisualMagick/archive/master.zip')
+            os.rename('VisualMagick-master', 'VisualMagick')
+
     def _copy_pkg_config(self, name):
         if name not in self.deps_cpp_info.deps:
             return
@@ -97,8 +110,63 @@ class ImageMagicConan(ConanFile):
             tools.replace_prefix_in_pc_file(new_pc, prefix)
 
     def build(self):
+        if self._is_msvc:
+            self._build_msvc()
+        else:
+            self._build_configure()
+
+    def _build_msvc(self):
+        # remove unnecessary dependencies from config
+        for lib in ['bzlib', 'glib', 'lcms', 'libxml', 'lqr', 'ttf', 'zlib']:
+            tools.replace_in_file(os.path.join('VisualMagick', 'MagickCore', 'Config.txt'),
+                                  '\n%s' % lib, '', strict=False)
+
+        # FIXME: FreeType
+        tools.replace_in_file(os.path.join('VisualMagick', 'ttf', 'Config.txt'),
+                              '#define MAGICKCORE_FREETYPE_DELEGATE', '')
+
+        with tools.chdir(os.path.join('VisualMagick', 'configure')):
+            with tools.vcvars(self.settings, arch='x86', force=True):
+                msbuild = MSBuild(self)
+                msbuild.build(project_file='configure.vcxproj', build_type='Release', arch='x86',
+                              platforms={'x86': 'Win32'})
+
+            # https://github.com/ImageMagick/ImageMagick-Windows/blob/master/AppVeyor/Build.ps1
+            command = ['configure.exe', '/noWizard']
+            msvc_version = {9: '/VS2002',
+                            10: '/VS2010',
+                            11: '/VS2012',
+                            12: '/VS2013',
+                            13: '/VS2015',
+                            15: '/VS2017'}.get(int(str(self.settings.compiler.version)))
+            runtime = {'MT': '/smt',
+                       'MTd': '/smtd',
+                       'MD': '/dmt',
+                       'MDd': '/mdt'}.get(str(self.settings.compiler.runtime))
+            command.append(runtime)
+            command.append(msvc_version)
+            command.append('/hdri' if self.options.hdri else '/noHdri')
+            command.append('/Q%s' % self.options.quantum_depth)
+            if self.settings.arch == 'x86_64':
+                command.append('/x64')
+            command = ' '.join(command)
+
+            self.output.info(command)
+            self.run(command)
+
+        with tools.chdir(os.path.join('VisualMagick', 'MagickCore')):
+            solution = {'MT': 'VisualStaticMT.sln',
+                        'MTd': 'VisualStaticMTD.sln',
+                        'MD': 'VisualDynamicMT.sln',
+                        'MDd': 'VisualDynamicMTD.sln'}.get(str(self.settings.compiler.runtime))
+            msbuild = MSBuild(self)
+            msbuild.build(project_file='CORE_MagickCore_DynamicMT.vcxproj',
+                          targets=['CORE_MagickCore'],
+                          platforms={'x86': 'Win32', 'x86_64': 'x64'})
+
+    def _build_configure(self):
         with tools.chdir(self._source_subfolder):
-            env_build = AutoToolsBuildEnvironment(self)
+            env_build = AutoToolsBuildEnvironment(self, win_bash=self._is_mingw_windows)
             args = ['--disable-openmp',
                     '--disable-docs',
                     '--with-utilities=no',

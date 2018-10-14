@@ -1,76 +1,78 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, tools, AutoToolsBuildEnvironment
 import os
 
 
-class LibnameConan(ConanFile):
-    name = "libname"
-    version = "0.0.0"
-    description = "Keep it short"
-    url = "https://github.com/bincrafters/conan-libname"
-    homepage = "https://github.com/original_author/original_lib"
+class ImageMagicConan(ConanFile):
+    name = "imagemagick"
+    version = "7.0.8-10"
+    description = "ImageMagick is a free and open-source software suite for displaying, converting, and editing raster image and vector image files"
+    url = "https://github.com/bincrafters/conan-imagemagic"
+    homepage = "https://imagemagick.org"
     author = "Bincrafters <bincrafters@gmail.com>"
-    # Indicates License type of the packaged library
-    license = "MIT"
-
-    # Packages the license for the conanfile.py
+    license = "ImageMagick"
     exports = ["LICENSE.md"]
-
-    # Remove following lines if the target lib does not use cmake.
-    exports_sources = ["CMakeLists.txt"]
-    generators = "cmake"
-
-    # Options may need to change depending on the packaged library.
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True}
+    options = {"shared": [True, False],
+               "fPIC": [True, False],
+               "hdri": [True, False],
+               "quantum_depth": [8, 16, 32]}
+    default_options = {"shared": False,
+                       "fPIC": True,
+                       "hdri": True,
+                       "quantum_depth": 16}
 
-    # Custom attributes for Bincrafters recipe conventions
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"
-
-    requires = (
-        "OpenSSL/1.0.2p@conan/stable",
-        "zlib/1.2.11@conan/stable"
-    )
 
     def config_options(self):
         if self.settings.os == 'Windows':
             del self.options.fPIC
 
     def source(self):
-        source_url = "https://github.com/libauthor/libname"
-        tools.get("{0}/archive/v{1}.tar.gz".format(source_url, self.version))
-        extracted_dir = self.name + "-" + self.version
-
-        # Rename to "source_subfolder" is a convention to simplify later steps
+        source_url = "https://github.com/ImageMagick/ImageMagick"
+        tools.get("{0}/archive/{1}.tar.gz".format(source_url, self.version))
+        extracted_dir = "ImageMagick-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
-    def _configure_cmake(self):
-        cmake = CMake(self)
-        cmake.definitions["BUILD_TESTS"] = False  # example
-        cmake.configure(build_folder=self._build_subfolder)
-        return cmake
-
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
+        with tools.chdir(self._source_subfolder):
+            env_build = AutoToolsBuildEnvironment(self)
+            args = ['--disable-openmp',
+                    '--disable-docs',
+                    '--with-utilities=no',
+                    '--with-perl=no',
+                    '--without-zlib'
+                    ]
+            if self.options.shared:
+                args.extend(['--enable-shared=yes', '--enable-static=no'])
+            else:
+                args.extend(['--enable-shared=no', '--enable-static=yes'])
+            args.append('--enable-hdri=yes' if self.options.hdri else '--enable-hdri=no')
+            args.append('--with-quantum-depth=%s' % self.options.quantum_depth)
+            env_build.configure(args=args)
+            env_build.make()
+            env_build.install()
 
     def package(self):
         self.copy(pattern="LICENSE", dst="licenses", src=self._source_subfolder)
-        cmake = self._configure_cmake()
-        cmake.install()
-        # If the CMakeLists.txt has a proper install method, the steps below may be redundant
-        # If so, you can just remove the lines below
-        include_folder = os.path.join(self._source_subfolder, "include")
-        self.copy(pattern="*", dst="include", src=include_folder)
-        self.copy(pattern="*.dll", dst="bin", keep_path=False)
-        self.copy(pattern="*.lib", dst="lib", keep_path=False)
-        self.copy(pattern="*.a", dst="lib", keep_path=False)
-        self.copy(pattern="*.so*", dst="lib", keep_path=False)
-        self.copy(pattern="*.dylib", dst="lib", keep_path=False)
+
+    @property
+    def _major(self):
+        return self.version.split('.')[0]
+
+    def _libname(self, library):
+        suffix = 'HDRI' if self.options.hdri else ''
+        return '%s-%s.Q%s%s' % (library, self._major, self.options.quantum_depth, suffix)
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.includedirs = [os.path.join('include', 'ImageMagick-%s' % self._major)]
+        self.cpp_info.libs = [self._libname('MagickCore'),
+                              self._libname('MagickWand'),
+                              self._libname('Magick++')]
+        if self.settings.os == 'Linux':
+            self.cpp_info.libs.append('pthread')
+        self.cpp_info.defines.append('MAGICKCORE_QUANTUM_DEPTH=%s' % self.options.quantum_depth)
+        self.cpp_info.defines.append('MAGICKCORE_HDRI_ENABLE=%s' % int(bool(self.options.hdri)))

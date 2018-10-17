@@ -47,7 +47,7 @@ class ImageMagicConan(ConanFile):
                        "tiff": True,
                        "webp": True}
 
-    _source_subfolder = "ImageMagick"
+    _source_subfolder = "ImageMagick"  # name is important, VisualMagick uses relative paths to it
     _build_subfolder = "build_subfolder"
 
     @property
@@ -57,6 +57,11 @@ class ImageMagicConan(ConanFile):
     @property
     def _is_msvc(self):
         return self.settings.compiler == 'Visual Studio'
+
+    @property
+    def _modules(self):
+        # TODO: add option to build only C?
+        return ['MagickCore', 'MagickWand', 'Magick++']
 
     def config_options(self):
         if self.settings.os == 'Windows':
@@ -125,6 +130,18 @@ class ImageMagicConan(ConanFile):
         tools.replace_in_file(os.path.join('VisualMagick', 'ttf', 'Config.txt'),
                               '#define MAGICKCORE_FREETYPE_DELEGATE', '')
 
+        # FIXME: libxml2
+        tools.replace_in_file(os.path.join('VisualMagick', 'libxml', 'Config.txt'),
+                              '#define MAGICKCORE_XML_DELEGATE', '')
+
+        # FIXME: libxml2
+        tools.replace_in_file(os.path.join('VisualMagick', 'lqr', 'Config.txt'),
+                              '#define MAGICKCORE_LQR_DELEGATE', '')
+
+        if not self.options.shared:
+            for module in self._modules:
+                tools.replace_in_file(os.path.join('VisualMagick', module, 'Config.txt'), '[DLL]', '[STATIC]')
+
         with tools.chdir(os.path.join('VisualMagick', 'configure')):
             with tools.vcvars(self.settings, arch='x86', force=True):
                 msbuild = MSBuild(self)
@@ -154,15 +171,16 @@ class ImageMagicConan(ConanFile):
             self.output.info(command)
             self.run(command)
 
-        with tools.chdir(os.path.join('VisualMagick', 'MagickCore')):
-            solution = {'MT': 'VisualStaticMT.sln',
-                        'MTd': 'VisualStaticMTD.sln',
-                        'MD': 'VisualDynamicMT.sln',
-                        'MDd': 'VisualDynamicMTD.sln'}.get(str(self.settings.compiler.runtime))
-            msbuild = MSBuild(self)
-            msbuild.build(project_file='CORE_MagickCore_DynamicMT.vcxproj',
-                          targets=['CORE_MagickCore'],
-                          platforms={'x86': 'Win32', 'x86_64': 'x64'})
+        solution = {'MT': 'VisualStaticMT.sln',
+                    'MTd': 'VisualStaticMTD.sln',
+                    'MD': 'VisualDynamicMT.sln',
+                    'MDd': 'VisualDynamicMTD.sln'}.get(str(self.settings.compiler.runtime))
+
+        for module in self._modules:
+            with tools.chdir(os.path.join('VisualMagick', module)):
+                msbuild = MSBuild(self)
+                msbuild.build(project_file='CORE_%s_DynamicMT.vcxproj' % module,
+                              platforms={'x86': 'Win32', 'x86_64': 'x64'})
 
     def _build_configure(self):
         with tools.chdir(self._source_subfolder):
@@ -203,21 +221,30 @@ class ImageMagicConan(ConanFile):
 
     def package(self):
         self.copy(pattern="LICENSE", dst="licenses", src=self._source_subfolder)
+        if self._is_msvc:
+            self.copy(pattern="*.lib", dst="lib", src=os.path.join('VisualMagick', 'lib'), keep_path=False)
+            self.copy(pattern="*.pdb", dst="lib", src=os.path.join('VisualMagick', 'lib'), keep_path=False)
+            for module in self._modules:
+                self.copy(pattern="*.h", dst=os.path.join("include", "ImageMagick-%s" % self._major, module),
+                          src=os.path.join(self._source_subfolder, module))
 
     @property
     def _major(self):
         return self.version.split('.')[0]
 
     def _libname(self, library):
-        suffix = 'HDRI' if self.options.hdri else ''
-        return '%s-%s.Q%s%s' % (library, self._major, self.options.quantum_depth, suffix)
+        if self._is_msvc:
+            infix = 'DB' if self.settings.build_type == 'Debug' else 'RL'
+            return 'CORE_%s_%s_' % (infix, library)
+        else:
+            suffix = 'HDRI' if self.options.hdri else ''
+            return '%s-%s.Q%s%s' % (library, self._major, self.options.quantum_depth, suffix)
 
     def package_info(self):
         self.cpp_info.includedirs = [os.path.join('include', 'ImageMagick-%s' % self._major)]
-        self.cpp_info.libs = [self._libname('MagickCore'),
-                              self._libname('MagickWand'),
-                              self._libname('Magick++')]
+        self.cpp_info.libs = [self._libname(m) for m in self._modules]
         if self.settings.os == 'Linux':
             self.cpp_info.libs.append('pthread')
         self.cpp_info.defines.append('MAGICKCORE_QUANTUM_DEPTH=%s' % self.options.quantum_depth)
         self.cpp_info.defines.append('MAGICKCORE_HDRI_ENABLE=%s' % int(bool(self.options.hdri)))
+        self.cpp_info.defines.append('_MAGICKDLL_=1' if self.options.shared else '_MAGICKLIB_=1')

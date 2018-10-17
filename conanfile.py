@@ -26,12 +26,14 @@ class ImageMagicConan(ConanFile):
                "bzlib": [True, False],
                "lzma": [True, False],
                "lcms": [True, False],
-               "exr": [True, False],
+               "openexr": [True, False],
                "jpeg": [True, False],
                "openjp2": [True, False],
                "png": [True, False],
                "tiff": [True, False],
-               "webp": [True, False]}
+               "webp": [True, False],
+               "xml": [True, False],
+               "freetype": [True, False]}
     default_options = {"shared": False,
                        "fPIC": True,
                        "hdri": True,
@@ -40,12 +42,14 @@ class ImageMagicConan(ConanFile):
                        "bzlib": True,
                        "lzma": True,
                        "lcms": True,
-                       "exr": True,
+                       "openexr": True,
                        "jpeg": True,
                        "openjp2": True,
                        "png": True,
                        "tiff": True,
-                       "webp": True}
+                       "webp": True,
+                       "xml": True,
+                       "freetype": True}
 
     _source_subfolder = "ImageMagick"  # name is important, VisualMagick uses relative paths to it
     _build_subfolder = "build_subfolder"
@@ -76,7 +80,7 @@ class ImageMagicConan(ConanFile):
             self.requires('lzma/5.2.4@bincrafters/stable')
         if self.options.lcms:
             self.requires('lcms/2.9@bincrafters/stable')
-        if self.options.exr:
+        if self.options.openexr:
             self.requires('openexr/2.3.0@conan/stable')
         if self.options.jpeg:
             self.requires('libjpeg/9c@bincrafters/stable')
@@ -88,6 +92,10 @@ class ImageMagicConan(ConanFile):
             self.requires('libtiff/4.0.9@bincrafters/stable')
         if self.options.webp:
             self.requires('libwebp/1.0.0@bincrafters/stable')
+        if self.options.xml:
+            self.requires('libxml2/2.9.8@bincrafters/stable')
+        if self.options.freetype:
+            self.requires('freetype/2.9.0@bincrafters/stable')
 
     def source(self):
         source_url = "https://github.com/ImageMagick/ImageMagick"
@@ -126,15 +134,7 @@ class ImageMagicConan(ConanFile):
             tools.replace_in_file(os.path.join('VisualMagick', 'MagickCore', 'Config.txt'),
                                   '\n%s' % lib, '', strict=False)
 
-        # FIXME: FreeType
-        tools.replace_in_file(os.path.join('VisualMagick', 'ttf', 'Config.txt'),
-                              '#define MAGICKCORE_FREETYPE_DELEGATE', '')
-
-        # FIXME: libxml2
-        tools.replace_in_file(os.path.join('VisualMagick', 'libxml', 'Config.txt'),
-                              '#define MAGICKCORE_XML_DELEGATE', '')
-
-        # FIXME: libxml2
+        # FIXME: LiquidRescale  aka liblqr
         tools.replace_in_file(os.path.join('VisualMagick', 'lqr', 'Config.txt'),
                               '#define MAGICKCORE_LQR_DELEGATE', '')
 
@@ -208,13 +208,15 @@ class ImageMagicConan(ConanFile):
             args.append('--with-bzlib=yes' if self.options.bzlib else '--with-bzlib=no')
             args.append('--with-lzma=yes' if self.options.lzma else '--with-lzma=no')
 
-            args.append('--with-lsmc=yes' if self.options.lcms else '--with-lcms=no')
-            args.append('--with-exr=yes' if self.options.exr else '--with-exr=no')
-            args.append('--with-jpeg=yes' if self.options.exr else '--with-exr=jpeg')
+            args.append('--with-lcms=yes' if self.options.lcms else '--with-lcms=no')
+            args.append('--with-openexr=yes' if self.options.openexr else '--with-openexr=no')
+            args.append('--with-jpeg=yes' if self.options.jpeg else '--with-jpeg=no')
             args.append('--with-openjp2=yes' if self.options.openjp2 else '--with-openjp2=no')
             args.append('--with-png=yes' if self.options.png else '--with-png=no')
-            args.append('--with-tiff=yes' if self.options.png else '--with-tiff=no')
+            args.append('--with-tiff=yes' if self.options.tiff else '--with-tiff=no')
             args.append('--with-webp=yes' if self.options.webp else '--with-webp=no')
+            args.append('--with-xml=yes' if self.options.xml else '--with-xml=no')
+            args.append('--with-freetype=yes' if self.options.freetype else '--with-freetype=no')
             env_build.configure(args=args, pkg_config_paths=[pkg_config_path])
             env_build.make()
             env_build.install()

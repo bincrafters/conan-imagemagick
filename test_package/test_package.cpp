@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <MagickCore/MagickCore.h>
 
 int main()
@@ -15,6 +16,9 @@ int main()
     std::cout << "ImageMagick features     : " << GetMagickFeatures() << std::endl;
     std::cout << "ImageMagick delegates    : " << GetMagickDelegates() << std::endl;
     std::cout << "ImageMagick copyright    : " << GetMagickCopyright() << std::endl;
+
+    std::fstream f("delegates.txt", std::ios_base::out);
+    f << GetMagickDelegates();
 
     return EXIT_SUCCESS;
 }

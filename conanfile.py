@@ -132,6 +132,33 @@ class ImageMagicConan(ConanFile):
         for lib in ['bzlib', 'glib', 'lcms', 'libxml', 'lqr', 'ttf', 'zlib']:
             tools.replace_in_file(os.path.join('VisualMagick', 'MagickCore', 'Config.txt'),
                                   '\n%s' % lib, '', strict=False)
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.dng.txt'), '\nlibraw', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.exr.txt'), '\nexr', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.flif.txt'), '\nflif', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.heic.txt'), '\nlibheif', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.heic.txt'), '\nlibde265', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.jbig.txt'), '\njbig', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.jp2.txt'), '\nopenjpeg', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.jpeg.txt'), '\njpeg', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.mat.txt'), '\nzlib', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.miff.txt'), '\nbzlib', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.miff.txt'), '\nliblzma', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.miff.txt'), '\nzlib', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.msl.txt'), '\nlibxml', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.pango.txt'), '\ncairo', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.pango.txt'), '\nglib', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.pango.txt'), '\npango', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.png.txt'), '\npng', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.png.txt'), '\nzlib', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.psd.txt'), '\nzlib', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.svg.txt'), '\ncairo', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.svg.txt'), '\nglib', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.svg.txt'), '\nlibxml', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.svg.txt'), '\nlibrsvg', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.tiff.txt'), '\ntiff', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.ttf.txt'), '\nttf', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.url.txt'), '\nlibxml', '')
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.webp.txt'), '\nwebp', '')
 
         # FIXME: package LiquidRescale  aka liblqr
         tools.replace_in_file(os.path.join('VisualMagick', 'lqr', 'Config.txt'),
@@ -192,15 +219,24 @@ class ImageMagicConan(ConanFile):
             self.run(command)
 
         # GdiPlus requires C++, but ImageMagick has *.c files
-        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'CORE_coders_DynamicMT.vcxproj'),
-                              '<ClCompile Include="..\..\ImageMagick\coders\emf.c">',
-                              '<ClCompile Include="..\..\ImageMagick\coders\emf.c">\n'
+        project = 'IM_MOD_emf_DynamicMT.vcxproj' if self.options.shared else 'CORE_coders_DynamicMT.vcxproj'
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', project),
+                              '<ClCompile Include="..\\..\\ImageMagick\\coders\\emf.c">',
+                              '<ClCompile Include="..\\..\\ImageMagick\\coders\\emf.c">\n'
                               '<CompileAs>CompileAsCpp</CompileAs>')
 
         solution = {'MT': 'VisualStaticMT.sln',
                     'MTd': 'VisualStaticMTD.sln',
                     'MD': 'VisualDynamicMT.sln',
                     'MDd': 'VisualDynamicMTD.sln'}.get(str(self.settings.compiler.runtime))
+
+        # why doesn't MSBuild do it out of the box? msbuild.env_info.link_flags is broken!
+        for _, dep in self.deps_cpp_info.dependencies:
+            libs = ' '.join(['%s.lib' % lib for lib in dep.libs])
+            if '_LINK_' in os.environ:
+                os.environ['_LINK_'] += ' ' + libs
+            else:
+                os.environ['_LINK_'] = libs
 
         for module in self._modules:
             with tools.chdir(os.path.join('VisualMagick', module)):
@@ -260,8 +296,13 @@ class ImageMagicConan(ConanFile):
     def package(self):
         self.copy(pattern="LICENSE", dst="licenses", src=self._source_subfolder)
         if self._is_msvc:
-            self.copy(pattern="*.lib", dst="lib", src=os.path.join('VisualMagick', 'lib'), keep_path=False)
-            self.copy(pattern="*.pdb", dst="lib", src=os.path.join('VisualMagick', 'lib'), keep_path=False)
+            self.copy(pattern="*CORE_*.lib", dst="lib", src=os.path.join('VisualMagick', 'lib'), keep_path=False)
+            self.copy(pattern="*CORE_*.pdb", dst="lib", src=os.path.join('VisualMagick', 'lib'), keep_path=False)
+
+            self.copy(pattern="*CORE_*.dll", dst="bin", src=os.path.join('VisualMagick', 'bin'), keep_path=False)
+            self.copy(pattern="*IM_MOD_*.dll", dst="bin", src=os.path.join('VisualMagick', 'bin'), keep_path=False)
+            self.copy(pattern="*CORE_*.pdb", dst="bin", src=os.path.join('VisualMagick', 'bin'), keep_path=False)
+            self.copy(pattern="*IM_MOD_*.pdb", dst="bin", src=os.path.join('VisualMagick', 'bin'), keep_path=False)
             for module in self._modules:
                 self.copy(pattern="*.h", dst=os.path.join("include", "ImageMagick-%s" % self._major, module),
                           src=os.path.join(self._source_subfolder, module))

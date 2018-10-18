@@ -192,6 +192,8 @@ class ImageMagicConan(ConanFile):
         with tools.chdir(os.path.join('VisualMagick', 'configure')):
             with tools.vcvars(self.settings, arch='x86', force=True):
                 msbuild = MSBuild(self)
+                # fatal error C1189: #error:  Please use the /MD switch for _AFXDLL builds
+                msbuild.build_env.flags = ["/MD"]
                 msbuild.build(project_file='configure.vcxproj', build_type='Release', arch='x86',
                               platforms={'x86': 'Win32'})
 
@@ -218,17 +220,17 @@ class ImageMagicConan(ConanFile):
             self.output.info(command)
             self.run(command)
 
+        suffix = {'MT': 'StaticMT',
+                  'MTd': 'StaticMTD',
+                  'MD': 'DynamicMT',
+                  'MDd': 'DynamicMT'}.get(str(self.settings.compiler.runtime))
+
         # GdiPlus requires C++, but ImageMagick has *.c files
-        project = 'IM_MOD_emf_DynamicMT.vcxproj' if self.options.shared else 'CORE_coders_DynamicMT.vcxproj'
+        project = 'IM_MOD_emf_%s.vcxproj' % suffix if self.options.shared else 'CORE_coders_%s.vcxproj' % suffix
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', project),
                               '<ClCompile Include="..\\..\\ImageMagick\\coders\\emf.c">',
                               '<ClCompile Include="..\\..\\ImageMagick\\coders\\emf.c">\n'
                               '<CompileAs>CompileAsCpp</CompileAs>')
-
-        solution = {'MT': 'VisualStaticMT.sln',
-                    'MTd': 'VisualStaticMTD.sln',
-                    'MD': 'VisualDynamicMT.sln',
-                    'MDd': 'VisualDynamicMTD.sln'}.get(str(self.settings.compiler.runtime))
 
         # why doesn't MSBuild do it out of the box? msbuild.env_info.link_flags is broken!
         for _, dep in self.deps_cpp_info.dependencies:
@@ -241,12 +243,12 @@ class ImageMagicConan(ConanFile):
         for module in self._modules:
             with tools.chdir(os.path.join('VisualMagick', module)):
                 msbuild = MSBuild(self)
-                msbuild.build(project_file='CORE_%s_DynamicMT.vcxproj' % module,
+                msbuild.build(project_file='CORE_%s_%s.vcxproj' % (module, suffix),
                               upgrade_project=False,
                               platforms={'x86': 'Win32', 'x86_64': 'x64'})
 
         with tools.chdir(os.path.join('VisualMagick', 'coders')):
-            pattern = 'IM_MOD_*_DynamicMT.vcxproj' if self.options.shared else 'CORE_coders_DynamicMT.vcxproj'
+            pattern = 'IM_MOD_*_%s.vcxproj' % suffix if self.options.shared else 'CORE_coders_%s.vcxproj' % suffix
             projects = glob.glob(pattern)
             for project in projects:
                 msbuild = MSBuild(self)

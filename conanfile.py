@@ -203,7 +203,7 @@ class ImageMagicConan(ConanFile):
                             10: '/VS2010',
                             11: '/VS2012',
                             12: '/VS2013',
-                            13: '/VS2015',
+                            14: '/VS2015',
                             15: '/VS2017'}.get(int(str(self.settings.compiler.version)))
             runtime = {'MT': '/smt',
                        'MTd': '/smtd',

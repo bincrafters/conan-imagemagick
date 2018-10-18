@@ -261,7 +261,8 @@ class ImageMagicConan(ConanFile):
             args = ['--disable-openmp',
                     '--disable-docs',
                     '--with-utilities=no',
-                    '--with-perl=no'
+                    '--with-perl=no',
+                    '--with-x=no'
                     ]
 
             os.makedirs('pkgconfig')

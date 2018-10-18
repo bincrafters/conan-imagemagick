@@ -10,10 +10,10 @@ import glob
 class ImageMagicConan(ConanFile):
     name = "imagemagick"
     version = "7.0.8-10"
-    description = "ImageMagick is a free and open-source software suite for displaying, converting, and editing " \
-                  "raster image and vector image files"
+    description = ("ImageMagick is a free and open-source software suite for displaying, converting, and editing "
+                  "raster image and vector image files")
     url = "https://github.com/bincrafters/conan-imagemagic"
-    homepage = "https://imagemagick.org"
+    homepage = "https://github.com/ImageMagick/ImageMagick"
     author = "Bincrafters <bincrafters@gmail.com>"
     license = "ImageMagick"
     exports = ["LICENSE.md"]
@@ -97,8 +97,7 @@ class ImageMagicConan(ConanFile):
             self.requires('freetype/2.9.0@bincrafters/stable')
 
     def source(self):
-        source_url = "https://github.com/ImageMagick/ImageMagick"
-        tools.get("{0}/archive/{1}.tar.gz".format(source_url, self.version))
+        tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
         extracted_dir = "ImageMagick-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 

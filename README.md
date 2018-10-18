@@ -1,7 +1,7 @@
 
 | Bintray | Windows | Linux & macOS |
 |:--------:|:---------:|:-----------------:|
-|BINTRAY_BADGE_URL|APPVEYOR_BADGE_URL|TRAVIS_BADGE_URL|
+|[![Download](https://api.bintray.com/packages/bincrafters/public-conan/imagemagick%3Abincrafters/images/download.svg)](https://bintray.com/bincrafters/public-conan/imagemagick%3Abincrafters/_latestVersion)|[![Build status](https://ci.appveyor.com/api/projects/status/github/bincrafters/conan-imagemagick?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-imagemagick)|[![Build Status](https://travis-ci.org/bincrafters/conan-imagemagick.svg?)](https://travis-ci.org/bincrafters/conan-imagemagick)|
 
 
 Bincrafters packages can be found in the following public Conan repository:

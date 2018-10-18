@@ -64,7 +64,6 @@ class ImageMagicConan(ConanFile):
 
     @property
     def _modules(self):
-        # TODO: add option to build only C?
         return ['MagickCore', 'MagickWand', 'Magick++']
 
     def config_options(self):
@@ -134,13 +133,34 @@ class ImageMagicConan(ConanFile):
             tools.replace_in_file(os.path.join('VisualMagick', 'MagickCore', 'Config.txt'),
                                   '\n%s' % lib, '', strict=False)
 
-        # FIXME: LiquidRescale  aka liblqr
+        # FIXME: package LiquidRescale  aka liblqr
         tools.replace_in_file(os.path.join('VisualMagick', 'lqr', 'Config.txt'),
                               '#define MAGICKCORE_LQR_DELEGATE', '')
+        # FIXME: package LibRaw
+        tools.replace_in_file(os.path.join('VisualMagick', 'libraw', 'Config.txt'),
+                              '#define MAGICKCORE_RAW_R_DELEGATE', '')
+
+        # FIXME: package FLIF (FLIF: Free Lossless Image Format)
+        tools.replace_in_file(os.path.join('VisualMagick', 'flif', 'Config.txt'),
+                              '#define MAGICKCORE_FLIF_DELEGATE', '')
+
+        # FIXME: package libheif (High Efficiency Image File Format)
+        tools.replace_in_file(os.path.join('VisualMagick', 'libheif', 'Config.txt'),
+                              '#define MAGICKCORE_HEIC_DELEGATE', '')
+
+        # FIXME: package pango
+        tools.replace_in_file(os.path.join('VisualMagick', 'pango', 'Config.txt'),
+                              '#define MAGICKCORE_PANGOCAIRO_DELEGATE', '')
+
+        # FIXME: package librsvg
+        tools.replace_in_file(os.path.join('VisualMagick', 'librsvg', 'Config.txt'),
+                              '#define MAGICKCORE_RSVG_DELEGATE', '')
 
         if not self.options.shared:
             for module in self._modules:
                 tools.replace_in_file(os.path.join('VisualMagick', module, 'Config.txt'), '[DLL]', '[STATIC]')
+            tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.txt'), '[DLLMODULE]',
+                                  '[STATIC]\n[DEFINES]\n_MAGICKLIB_')
 
         with tools.chdir(os.path.join('VisualMagick', 'configure')):
             with tools.vcvars(self.settings, arch='x86', force=True):
@@ -171,6 +191,12 @@ class ImageMagicConan(ConanFile):
             self.output.info(command)
             self.run(command)
 
+        # GdiPlus requires C++, but ImageMagick has *.c files
+        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'CORE_coders_DynamicMT.vcxproj'),
+                              '<ClCompile Include="..\..\ImageMagick\coders\emf.c">',
+                              '<ClCompile Include="..\..\ImageMagick\coders\emf.c">\n'
+                              '<CompileAs>CompileAsCpp</CompileAs>')
+
         solution = {'MT': 'VisualStaticMT.sln',
                     'MTd': 'VisualStaticMTD.sln',
                     'MD': 'VisualDynamicMT.sln',
@@ -180,6 +206,16 @@ class ImageMagicConan(ConanFile):
             with tools.chdir(os.path.join('VisualMagick', module)):
                 msbuild = MSBuild(self)
                 msbuild.build(project_file='CORE_%s_DynamicMT.vcxproj' % module,
+                              upgrade_project=False,
+                              platforms={'x86': 'Win32', 'x86_64': 'x64'})
+
+        with tools.chdir(os.path.join('VisualMagick', 'coders')):
+            pattern = 'IM_MOD_*_DynamicMT.vcxproj' if self.options.shared else 'CORE_coders_DynamicMT.vcxproj'
+            projects = glob.glob(pattern)
+            for project in projects:
+                msbuild = MSBuild(self)
+                msbuild.build(project_file=project,
+                              upgrade_project=False,
                               platforms={'x86': 'Win32', 'x86_64': 'x64'})
 
     def _build_configure(self):
@@ -245,6 +281,9 @@ class ImageMagicConan(ConanFile):
     def package_info(self):
         self.cpp_info.includedirs = [os.path.join('include', 'ImageMagick-%s' % self._major)]
         self.cpp_info.libs = [self._libname(m) for m in self._modules]
+        if self._is_msvc:
+            if not self.options.shared:
+                self.cpp_info.libs.append(self._libname('coders'))
         if self.settings.os == 'Linux':
             self.cpp_info.libs.append('pthread')
         self.cpp_info.defines.append('MAGICKCORE_QUANTUM_DEPTH=%s' % self.options.quantum_depth)

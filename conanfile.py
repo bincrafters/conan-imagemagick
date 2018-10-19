@@ -192,7 +192,7 @@ class ImageMagicConan(ConanFile):
             msbuild = MSBuild(self)
             # fatal error C1189: #error:  Please use the /MD switch for _AFXDLL builds
             msbuild.build_env.flags = ["/MD"]
-            msbuild.build(project_file='configure.vcxproj', build_type='Release', arch='x86',
+            msbuild.build(project_file='configure.vcxproj',
                           platforms={'x86': 'Win32'}, force_vcvars=True)
 
             # https://github.com/ImageMagick/ImageMagick-Windows/blob/master/AppVeyor/Build.ps1

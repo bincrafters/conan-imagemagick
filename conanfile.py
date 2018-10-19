@@ -188,6 +188,11 @@ class ImageMagicConan(ConanFile):
             tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.txt'), '[DLLMODULE]',
                                   '[STATIC]\n[DEFINES]\n_MAGICKLIB_')
 
+        if self.settings.arch == 'x86_64':
+            project = os.path.join('VisualMagick', 'configure', 'configure.vcxproj')
+            tools.replace_in_file(project, 'Win32', 'x64')
+            tools.replace_in_file(project, '/MACHINE:I386', '/MACHINE:x64')
+
         with tools.chdir(os.path.join('VisualMagick', 'configure')):
             msbuild = MSBuild(self)
             # fatal error C1189: #error:  Please use the /MD switch for _AFXDLL builds

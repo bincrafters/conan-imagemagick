@@ -112,7 +112,7 @@ class ImageMagicConan(ConanFile):
         pc_dir = os.path.join(root, 'lib', 'pkgconfig')
         pc_files = glob.glob('%s/*.pc' % pc_dir)
         if not pc_files:
-            pc_files = glob.glob('%s/.pc' % root)
+            pc_files = glob.glob('%s/*.pc' % root)
         for pc_name in pc_files:
             new_pc = os.path.join('pkgconfig', os.path.basename(pc_name))
             self.output.info('copying .pc file %s' % os.path.basename(pc_name))

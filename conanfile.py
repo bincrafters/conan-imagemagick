@@ -233,6 +233,13 @@ class ImageMagicConan(ConanFile):
             self.output.info(command)
             self.run(command)
 
+        # disable incorrectly detected OpenCL
+        baseconfig = os.path.join(self._source_subfolder, 'MagickCore', 'magick-baseconfig.h')
+        tools.replace_in_file(baseconfig,
+                              '#define MAGICKCORE__OPENCL', '#undef MAGICKCORE__OPENCL', strict=False)
+        tools.replace_in_file(baseconfig,
+                              '#define MAGICKCORE_HAVE_CL_CL_H', '#undef MAGICKCORE_HAVE_CL_CL_H', strict=False)
+
         suffix = {'MT': 'StaticMT',
                   'MTd': 'StaticMTD',
                   'MD': 'DynamicMT',

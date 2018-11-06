@@ -194,6 +194,16 @@ class ImageMagicConan(ConanFile):
             tools.replace_in_file(project, '/MACHINE:I386', '/MACHINE:x64')
 
         with tools.chdir(os.path.join('VisualMagick', 'configure')):
+
+            toolset = self.settings.get_safe("compiler.toolset")
+            if not toolset:
+                toolset = {'12': 'v120',
+                           '14': 'v140',
+                           '15': 'v141'}.get(str(self.settings.compiler.version))
+            tools.replace_in_file('configure.vcxproj',
+                                  '<PlatformToolset>v120</PlatformToolset>',
+                                  '<PlatformToolset>%s</PlatformToolset>' % toolset)
+
             msbuild = MSBuild(self)
             # fatal error C1189: #error:  Please use the /MD switch for _AFXDLL builds
             msbuild.build_env.flags = ["/MD"]
@@ -222,6 +232,13 @@ class ImageMagicConan(ConanFile):
 
             self.output.info(command)
             self.run(command)
+
+        # disable incorrectly detected OpenCL
+        baseconfig = os.path.join(self._source_subfolder, 'MagickCore', 'magick-baseconfig.h')
+        tools.replace_in_file(baseconfig,
+                              '#define MAGICKCORE__OPENCL', '#undef MAGICKCORE__OPENCL', strict=False)
+        tools.replace_in_file(baseconfig,
+                              '#define MAGICKCORE_HAVE_CL_CL_H', '#undef MAGICKCORE_HAVE_CL_CL_H', strict=False)
 
         suffix = {'MT': 'StaticMT',
                   'MTd': 'StaticMTD',

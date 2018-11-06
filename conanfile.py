@@ -101,9 +101,8 @@ class ImageMagicConan(ConanFile):
         extracted_dir = "ImageMagick-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
-        if self._is_msvc:
-            tools.get('https://github.com/ImageMagick/VisualMagick/archive/master.zip')
-            os.rename('VisualMagick-master', 'VisualMagick')
+        tools.get('https://github.com/ImageMagick/VisualMagick/archive/master.zip')
+        os.rename('VisualMagick-master', 'VisualMagick')
 
     def _copy_pkg_config(self, name):
         if name not in self.deps_cpp_info.deps:

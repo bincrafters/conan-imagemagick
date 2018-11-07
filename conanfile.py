@@ -251,14 +251,6 @@ class ImageMagicConan(ConanFile):
                               '<ClCompile Include="..\\..\\ImageMagick\\coders\\emf.c">\n'
                               '<CompileAs>CompileAsCpp</CompileAs>')
 
-        # why doesn't MSBuild do it out of the box? msbuild.env_info.link_flags is broken!
-        for _, dep in self.deps_cpp_info.dependencies:
-            libs = ' '.join(['%s.lib' % lib for lib in dep.libs])
-            if '_LINK_' in os.environ:
-                os.environ['_LINK_'] += ' ' + libs
-            else:
-                os.environ['_LINK_'] = libs
-
         for module in self._modules:
             with tools.chdir(os.path.join('VisualMagick', module)):
                 msbuild = MSBuild(self)

@@ -9,7 +9,7 @@ import glob
 
 class ImageMagicConan(ConanFile):
     name = "imagemagick"
-    version = "7.0.8-10"
+    version = "7.0.8-27"
     description = ("ImageMagick is a free and open-source software suite for displaying, converting, and editing "
                   "raster image and vector image files")
     url = "https://github.com/bincrafters/conan-imagemagic"
@@ -250,14 +250,6 @@ class ImageMagicConan(ConanFile):
                               '<ClCompile Include="..\\..\\ImageMagick\\coders\\emf.c">',
                               '<ClCompile Include="..\\..\\ImageMagick\\coders\\emf.c">\n'
                               '<CompileAs>CompileAsCpp</CompileAs>')
-
-        # why doesn't MSBuild do it out of the box? msbuild.env_info.link_flags is broken!
-        for _, dep in self.deps_cpp_info.dependencies:
-            libs = ' '.join(['%s.lib' % lib for lib in dep.libs])
-            if '_LINK_' in os.environ:
-                os.environ['_LINK_'] += ' ' + libs
-            else:
-                os.environ['_LINK_'] = libs
 
         for module in self._modules:
             with tools.chdir(os.path.join('VisualMagick', module)):

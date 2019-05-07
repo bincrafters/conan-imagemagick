@@ -33,7 +33,8 @@ class ImageMagicConan(ConanFile):
                "tiff": [True, False],
                "webp": [True, False],
                "xml": [True, False],
-               "freetype": [True, False]}
+               "freetype": [True, False],
+               "utilities": [True, False]}
     default_options = {"shared": False,
                        "fPIC": True,
                        "hdri": True,
@@ -49,7 +50,8 @@ class ImageMagicConan(ConanFile):
                        "tiff": True,
                        "webp": True,
                        "xml": True,
-                       "freetype": True}
+                       "freetype": True,
+                       "utilities": True}
 
     _source_subfolder = "ImageMagick"  # name is important, VisualMagick uses relative paths to it
     _build_subfolder = "build_subfolder"
@@ -280,7 +282,6 @@ class ImageMagicConan(ConanFile):
             env_build = AutoToolsBuildEnvironment(self, win_bash=self._is_mingw_windows)
             args = ['--disable-openmp',
                     '--disable-docs',
-                    '--with-utilities=no',
                     '--with-perl=no',
                     '--with-x=no'
                     ]
@@ -311,6 +312,7 @@ class ImageMagicConan(ConanFile):
             args.append('--with-webp=yes' if self.options.webp else '--with-webp=no')
             args.append('--with-xml=yes' if self.options.xml else '--with-xml=no')
             args.append('--with-freetype=yes' if self.options.freetype else '--with-freetype=no')
+            args.append('--with-utilities=yes' if self.options.utilities else '--with-utilities=no')
             env_build.configure(args=args, pkg_config_paths=[pkg_config_path])
             env_build.make()
             env_build.install()
@@ -342,6 +344,7 @@ class ImageMagicConan(ConanFile):
             return '%s-%s.Q%s%s' % (library, self._major, self.options.quantum_depth, suffix)
 
     def package_info(self):
+        self.env_info.path.append(os.path.join(self.package_folder, "bin"))
         self.cpp_info.includedirs = [os.path.join('include', 'ImageMagick-%s' % self._major)]
         self.cpp_info.libs = [self._libname(m) for m in self._modules]
         if self._is_msvc:

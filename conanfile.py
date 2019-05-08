@@ -12,6 +12,7 @@ class ImageMagicConan(ConanFile):
     version = "7.0.8-10"
     description = ("ImageMagick is a free and open-source software suite for displaying, converting, and editing "
                   "raster image and vector image files")
+    topics = ("conan", "imagemagick", "images", "manipulating")
     url = "https://github.com/bincrafters/conan-imagemagic"
     homepage = "https://github.com/ImageMagick/ImageMagick"
     author = "Bincrafters <bincrafters@gmail.com>"

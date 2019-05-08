@@ -9,7 +9,7 @@ import glob
 
 class ImageMagicConan(ConanFile):
     name = "imagemagick"
-    version = "7.0.8-27"
+    version = "7.0.8-44"
     description = ("ImageMagick is a free and open-source software suite for displaying, converting, and editing "
                   "raster image and vector image files")
     topics = ("conan", "imagemagick", "images", "manipulating")

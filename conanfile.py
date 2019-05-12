@@ -89,15 +89,15 @@ class ImageMagicConan(ConanFile):
         if self.options.openjp2:
             self.requires('openjpeg/2.3.0@bincrafters/stable')
         if self.options.png:
-            self.requires('libpng/1.6.34@bincrafters/stable')
+            self.requires('libpng/1.6.36@bincrafters/stable')
         if self.options.tiff:
             self.requires('libtiff/4.0.9@bincrafters/stable')
         if self.options.webp:
             self.requires('libwebp/1.0.0@bincrafters/stable')
         if self.options.xml:
-            self.requires('libxml2/2.9.8@bincrafters/stable')
+            self.requires('libxml2/2.9.9@bincrafters/stable')
         if self.options.freetype:
-            self.requires('freetype/2.9.0@bincrafters/stable')
+            self.requires('freetype/2.9.1@bincrafters/stable')
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))

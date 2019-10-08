@@ -75,25 +75,25 @@ class ImageMagicConan(ConanFile):
 
     def requirements(self):
         if self.options.zlib:
-            self.requires('zlib/1.2.11@conan/stable')
+            self.requires('zlib/1.2.11')
         if self.options.bzlib:
-            self.requires('bzip2/1.0.6@conan/stable')
+            self.requires('bzip2/1.0.6')
         if self.options.lzma:
-            self.requires('lzma/5.2.4@bincrafters/stable')
+            self.requires('xz_utils/5.2.4')
         if self.options.lcms:
             self.requires('lcms/2.9@bincrafters/stable')
         if self.options.openexr:
             self.requires('openexr/2.3.0@conan/stable')
         if self.options.jpeg:
-            self.requires('libjpeg/9c@bincrafters/stable')
+            self.requires('libjpeg/9c')
         if self.options.openjp2:
             self.requires('openjpeg/2.3.1@bincrafters/stable')
         if self.options.png:
-            self.requires('libpng/1.6.37@bincrafters/stable')
+            self.requires('libpng/1.6.37')
         if self.options.tiff:
-            self.requires('libtiff/4.0.9@bincrafters/stable')
+            self.requires('libtiff/4.0.9')
         if self.options.webp:
-            self.requires('libwebp/1.0.0@bincrafters/stable')
+            self.requires('libwebp/1.0.3')
         if self.options.xml:
             self.requires('libxml2/2.9.9@bincrafters/stable')
         if self.options.freetype:

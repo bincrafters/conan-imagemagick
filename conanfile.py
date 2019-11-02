@@ -67,7 +67,7 @@ class ImageMagicConan(ConanFile):
 
     @property
     def _modules(self):
-        return ['MagickCore', 'MagickWand', 'Magick++']
+        return ['Magick++', 'MagickWand', 'MagickCore']
 
     def config_options(self):
         if self.settings.os == 'Windows':

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
 import shutil
@@ -81,7 +78,7 @@ class ImageMagicConan(ConanFile):
         if self.options.lzma:
             self.requires('xz_utils/5.2.4')
         if self.options.lcms:
-            self.requires('lcms/2.9@bincrafters/stable')
+            self.requires('lcms/2.9')
         if self.options.openexr:
             self.requires('openexr/2.3.0@conan/stable')
         if self.options.jpeg:
@@ -95,7 +92,7 @@ class ImageMagicConan(ConanFile):
         if self.options.webp:
             self.requires('libwebp/1.0.3')
         if self.options.xml:
-            self.requires('libxml2/2.9.9@bincrafters/stable')
+            self.requires('libxml2/2.9.9')
         if self.options.freetype:
             self.requires('freetype/2.9.1@bincrafters/stable')
 

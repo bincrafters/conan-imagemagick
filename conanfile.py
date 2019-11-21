@@ -12,7 +12,6 @@ class ImageMagicConan(ConanFile):
     topics = ("conan", "imagemagick", "images", "manipulating")
     url = "https://github.com/bincrafters/conan-imagemagic"
     homepage = "https://github.com/ImageMagick/ImageMagick"
-    author = "Bincrafters <bincrafters@gmail.com>"
     license = "ImageMagick"
     exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"

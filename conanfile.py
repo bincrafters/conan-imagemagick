@@ -79,11 +79,11 @@ class ImageMagicConan(ConanFile):
         if self.options.lcms:
             self.requires('lcms/2.9')
         if self.options.openexr:
-            self.requires('openexr/2.3.0@conan/stable')
+            self.requires('openexr/2.3.0')
         if self.options.jpeg:
             self.requires('libjpeg/9c')
         if self.options.openjp2:
-            self.requires('openjpeg/2.3.1@bincrafters/stable')
+            self.requires('openjpeg/2.3.1')
         if self.options.png:
             self.requires('libpng/1.6.37')
         if self.options.tiff:

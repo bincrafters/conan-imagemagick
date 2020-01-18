@@ -197,7 +197,8 @@ class ImageMagicConan(ConanFile):
             if not toolset:
                 toolset = {'12': 'v120',
                            '14': 'v140',
-                           '15': 'v141'}.get(str(self.settings.compiler.version))
+                           '15': 'v141',
+                           '16': 'v142'}.get(str(self.settings.compiler.version))
             tools.replace_in_file('configure.vcxproj',
                                   '<PlatformToolset>v120</PlatformToolset>',
                                   '<PlatformToolset>%s</PlatformToolset>' % toolset)

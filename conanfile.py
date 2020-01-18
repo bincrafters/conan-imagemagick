@@ -216,7 +216,7 @@ class ImageMagicConan(ConanFile):
                             12: '/VS2013',
                             14: '/VS2015',
                             15: '/VS2017',
-							16: '/VS2019'}.get(int(str(self.settings.compiler.version)))
+                            16: '/VS2019'}.get(int(str(self.settings.compiler.version)))
             runtime = {'MT': '/smt',
                        'MTd': '/smtd',
                        'MD': '/dmt',

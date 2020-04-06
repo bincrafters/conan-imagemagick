@@ -13,7 +13,6 @@ class ImageMagicConan(ConanFile):
     url = "https://github.com/bincrafters/conan-imagemagic"
     homepage = "https://github.com/ImageMagick/ImageMagick"
     license = "ImageMagick"
-    exports = ["LICENSE.md"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False],
                "fPIC": [True, False],
@@ -93,7 +92,7 @@ class ImageMagicConan(ConanFile):
         if self.options.xml:
             self.requires('libxml2/2.9.9')
         if self.options.freetype:
-            self.requires('freetype/2.9.1@bincrafters/stable')
+            self.requires('freetype/2.10.1')
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))

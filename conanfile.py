@@ -90,7 +90,7 @@ class ImageMagicConan(ConanFile):
         if self.options.webp:
             self.requires('libwebp/1.0.3')
         if self.options.xml:
-            self.requires('libxml2/2.9.9')
+            self.requires('libxml2/2.9.10')
         if self.options.freetype:
             self.requires('freetype/2.10.1')
 

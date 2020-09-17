@@ -109,14 +109,13 @@ class ImageMagicConan(ConanFile):
 
     def _build_msvc(self):
         # remove unnecessary dependencies from config
-        for lib in ['bzlib', 'glib', 'lcms', 'libxml', 'lqr', 'ttf', 'zlib']:
+        for lib in ['bzlib', 'lcms', 'libxml', 'lqr', 'zlib']:
             tools.replace_in_file(os.path.join('VisualMagick', 'MagickCore', 'Config.txt'),
                                   '\n%s' % lib, '', strict=False)
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.dng.txt'), '\nlibraw', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.exr.txt'), '\nexr', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.flif.txt'), '\nflif', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.heic.txt'), '\nlibheif', '')
-        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.heic.txt'), '\nlibde265', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.jbig.txt'), '\njbig', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.jp2.txt'), '\nopenjpeg', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.jpeg.txt'), '\njpeg', '')
@@ -136,7 +135,6 @@ class ImageMagicConan(ConanFile):
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.svg.txt'), '\nlibxml', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.svg.txt'), '\nlibrsvg', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.tiff.txt'), '\ntiff', '')
-        tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.ttf.txt'), '\nttf', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.url.txt'), '\nlibxml', '')
         tools.replace_in_file(os.path.join('VisualMagick', 'coders', 'Config.webp.txt'), '\nwebp', '')
 

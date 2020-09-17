@@ -48,6 +48,8 @@ class ImageMagicConan(ConanFile):
                        "freetype": True,
                        "utilities": True}
 
+    generators = "pkg_config"
+
     _source_subfolder = "ImageMagick"  # name is important, VisualMagick uses relative paths to it
     _build_subfolder = "build_subfolder"
 

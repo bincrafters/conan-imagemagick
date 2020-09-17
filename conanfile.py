@@ -1,6 +1,5 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment, MSBuild
 import os
-import shutil
 import glob
 
 
@@ -101,21 +100,6 @@ class ImageMagicConan(ConanFile):
 
         tools.get('https://github.com/ImageMagick/VisualMagick/archive/master.zip')
         os.rename('VisualMagick-master', 'VisualMagick')
-
-    def _copy_pkg_config(self, name):
-        if name not in self.deps_cpp_info.deps:
-            return
-        root = self.deps_cpp_info[name].rootpath
-        pc_dir = os.path.join(root, 'lib', 'pkgconfig')
-        pc_files = glob.glob('%s/*.pc' % pc_dir)
-        if not pc_files:
-            pc_files = glob.glob('%s/*.pc' % root)
-        for pc_name in pc_files:
-            new_pc = os.path.join('pkgconfig', os.path.basename(pc_name))
-            self.output.info('copying .pc file %s' % os.path.basename(pc_name))
-            shutil.copy(pc_name, new_pc)
-            prefix = tools.unix_path(root) if os.name == 'nt' else root
-            tools.replace_prefix_in_pc_file(new_pc, prefix)
 
     def build(self):
         if self._is_msvc:
@@ -274,13 +258,6 @@ class ImageMagicConan(ConanFile):
                     '--with-x=no'
                     ]
 
-            os.makedirs('pkgconfig')
-            pkg_config_path = os.path.abspath('pkgconfig')
-            pkg_config_path = tools.unix_path(pkg_config_path) if os.name == 'nt' else pkg_config_path
-
-            for dep in self.deps_cpp_info.deps:
-                self._copy_pkg_config(dep)
-
             if self.options.shared:
                 args.extend(['--enable-shared=yes', '--enable-static=no'])
             else:
@@ -301,7 +278,7 @@ class ImageMagicConan(ConanFile):
             args.append('--with-xml=yes' if self.options.xml else '--with-xml=no')
             args.append('--with-freetype=yes' if self.options.freetype else '--with-freetype=no')
             args.append('--with-utilities=yes' if self.options.utilities else '--with-utilities=no')
-            env_build.configure(args=args, pkg_config_paths=[pkg_config_path])
+            env_build.configure(args=args)
             env_build.make()
             env_build.install()
 

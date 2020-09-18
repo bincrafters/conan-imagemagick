@@ -96,6 +96,8 @@ class ImageMagicConan(ConanFile):
             self.requires('freetype/2.10.2')
         if self.settings.os == "Windows":
             self.requires('libzip/1.7.3')
+        if self.settings.os == "Linux":
+            self.requires('fontconfig/2.13.91')
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))

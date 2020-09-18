@@ -77,9 +77,9 @@ class ImageMagicConan(ConanFile):
         if self.options.lzma:
             self.requires('xz_utils/5.2.4')
         if self.options.lcms:
-            self.requires('lcms/2.9')
+            self.requires('lcms/2.11')
         if self.options.openexr:
-            self.requires('openexr/2.3.0')
+            self.requires('openexr/2.5.2')
         if self.options.jpeg:
             self.requires('libjpeg/9d')
         if self.options.openjp2:

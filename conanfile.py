@@ -94,6 +94,8 @@ class ImageMagicConan(ConanFile):
             self.requires('libxml2/2.9.10')
         if self.options.freetype:
             self.requires('freetype/2.10.2')
+        if self.settings.os == "Windows":
+            self.requires('libzip/1.7.3')
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))

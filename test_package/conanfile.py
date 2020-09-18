@@ -29,7 +29,7 @@ class TestPackageConan(ConanFile):
             check(self.options['imagemagick'].bzlib, 'bzlib')
             check(self.options['imagemagick'].lzma, 'lzma')
             check(self.options['imagemagick'].lcms, 'lcms')
-            check(self.options['imagemagick'].openexr, 'exr')
+            check(self.options['imagemagick'].openexr, 'openexr')
             check(self.options['imagemagick'].jpeg, 'jpeg')
             check(self.options['imagemagick'].openjp2, 'jp2')
             check(self.options['imagemagick'].png, 'png')

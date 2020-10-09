@@ -75,7 +75,7 @@ class ImageMagicConan(ConanFile):
         if self.options.bzlib:
             self.requires('bzip2/1.0.8')
         if self.options.lzma:
-            self.requires('xz_utils/5.2.4')
+            self.requires('xz_utils/5.2.5')
         if self.options.lcms:
             self.requires('lcms/2.11')
         if self.options.openexr:

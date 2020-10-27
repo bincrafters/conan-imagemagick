@@ -283,7 +283,7 @@ class ImageMagicConan(ConanFile):
 
             args.append('--with-lcms=yes' if self.options.lcms else '--with-lcms=no')
             args.append('--with-openexr=yes' if self.options.openexr else '--with-openexr=no')
-            args.append('--with-jpeg=yes' if self.options.jpeg else '--with-jpeg=no')
+            args.append('--with-jpeg=yes' if self.options.with_libjpeg else '--with-jpeg=no')
             args.append('--with-openjp2=yes' if self.options.openjp2 else '--with-openjp2=no')
             args.append('--with-png=yes' if self.options.png else '--with-png=no')
             args.append('--with-tiff=yes' if self.options.tiff else '--with-tiff=no')

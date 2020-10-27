@@ -90,7 +90,7 @@ class ImageMagicConan(ConanFile):
         if self.options.openexr:
             self.requires('openexr/2.3.0')
         if self.options.with_libjpeg:
-            if self.options.with_libjpeg == "libjpeg-turbo"
+            if self.options.with_libjpeg == "libjpeg-turbo":
                 self.requires('libjpeg-turbo/2.0.5')
             else:
                 self.requires('libjpeg/9d')

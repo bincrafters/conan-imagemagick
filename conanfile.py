@@ -29,7 +29,8 @@ class ImageMagicConan(ConanFile):
                "webp": [True, False],
                "xml": [True, False],
                "freetype": [True, False],
-               "utilities": [True, False]}
+               "utilities": [True, False],
+               "with_libjpeg": [True, False, "libjpeg-turbo"]}
     default_options = {"shared": False,
                        "fPIC": True,
                        "hdri": True,
@@ -68,6 +69,13 @@ class ImageMagicConan(ConanFile):
     def config_options(self):
         if self.settings.os == 'Windows':
             del self.options.fPIC
+    
+    def configure(self):
+        # Handle deprecated jpeg option
+        if self.options.jpeg:
+            self.output.warn("jpeg option is deprecated, use with_libjpeg option instead.")
+            self.options.with_libjpeg = True
+        del self.options.jpeg
 
     def requirements(self):
         if self.options.zlib:
@@ -80,8 +88,11 @@ class ImageMagicConan(ConanFile):
             self.requires('lcms/2.9')
         if self.options.openexr:
             self.requires('openexr/2.3.0')
-        if self.options.jpeg:
-            self.requires('libjpeg/9d')
+        if self.options.with_libjpeg:
+            if self.options.with_libjpeg == "libjpeg-turbo"
+                self.requires('libjpeg-turbo/2.0.5')
+            else:
+                self.requires('libjpeg/9d')
         if self.options.openjp2:
             self.requires('openjpeg/2.3.1')
         if self.options.png:

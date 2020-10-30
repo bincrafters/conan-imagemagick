@@ -93,7 +93,7 @@ class ImageMagicConan(ConanFile):
         if self.options.xml:
             self.requires('libxml2/2.9.10')
         if self.options.freetype:
-            self.requires('freetype/2.10.2')
+            self.requires('freetype/2.10.4')
         if self.settings.os == "Windows":
             self.requires('libzip/1.7.3')
         if self.settings.os == "Linux":

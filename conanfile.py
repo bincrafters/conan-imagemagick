@@ -73,7 +73,7 @@ class ImageMagicConan(ConanFile):
     
     def configure(self):
         # Handle deprecated jpeg option
-        if self.options.jpeg:
+        if self.options.jpeg and not self.options.with_libjpeg:
             self.output.warn("jpeg option is deprecated, use with_libjpeg option instead.")
             self.options.with_libjpeg = True
         del self.options.jpeg

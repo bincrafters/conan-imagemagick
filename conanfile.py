@@ -30,7 +30,7 @@ class ImageMagicConan(ConanFile):
                "xml": [True, False],
                "freetype": [True, False],
                "utilities": [True, False],
-               "with_libjpeg": [True, False, "libjpeg-turbo"]}
+               "with_libjpeg": [False, "libjpeg", "libjpeg-turbo"]}
     default_options = {"shared": False,
                        "fPIC": True,
                        "hdri": True,

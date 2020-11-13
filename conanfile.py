@@ -40,7 +40,7 @@ class ImageMagicConan(ConanFile):
                        "lzma": True,
                        "lcms": True,
                        "openexr": True,
-                       "jpeg": True,
+                       "jpeg": False,
                        "openjp2": True,
                        "png": True,
                        "tiff": True,
@@ -73,9 +73,8 @@ class ImageMagicConan(ConanFile):
     
     def configure(self):
         # Handle deprecated jpeg option
-        if self.options.jpeg and not self.options.with_libjpeg:
+        if self.options.jpeg:
             self.output.warn("jpeg option is deprecated, use with_libjpeg option instead.")
-            self.options.with_libjpeg = True
         del self.options.jpeg
 
     def requirements(self):

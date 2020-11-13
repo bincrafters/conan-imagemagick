@@ -45,7 +45,7 @@ class ImageMagicConan(ConanFile):
                        "png": True,
                        "tiff": True,
                        "webp": True,
-                       "with_libjpeg": True,
+                       "with_libjpeg": "libjpeg",
                        "xml": True,
                        "freetype": True,
                        "utilities": True}

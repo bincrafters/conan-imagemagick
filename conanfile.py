@@ -83,7 +83,7 @@ class ImageMagicConan(ConanFile):
         if self.options.jpeg:
             self.requires('libjpeg/9d')
         if self.options.openjp2:
-            self.requires('openjpeg/2.3.1')
+            self.requires('openjpeg/2.4.0')
         if self.options.png:
             self.requires('libpng/1.6.37')
         if self.options.tiff:

@@ -104,8 +104,8 @@ class ImageMagicConan(ConanFile):
         extracted_dir = "ImageMagick-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
-        tools.get('https://github.com/ImageMagick/VisualMagick/archive/master.zip')
-        os.rename('VisualMagick-master', 'VisualMagick')
+        tools.get('https://github.com/ImageMagick/VisualMagick/archive/main.zip')
+        os.rename('VisualMagick-main', 'VisualMagick')
 
     def build(self):
         if self._is_msvc:
